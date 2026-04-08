@@ -17,9 +17,42 @@ const rootDir = path.resolve(__dirname, '..', '..');
 
 const app = express();
 
+const allowedOrigins = [
+  ...(process.env.CLIENT_URLS ? process.env.CLIENT_URLS.split(',') : []),
+  ...(process.env.CLIENT_URL ? [process.env.CLIENT_URL] : []),
+  'http://localhost:5173'
+]
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const defaultAllowedOriginPatterns = [
+  /^http:\/\/localhost:\d+$/,
+  /^https:\/\/.*\.vercel\.app$/
+];
+
+const isOriginAllowed = (origin) => {
+  if (allowedOrigins.includes(origin)) {
+    return true;
+  }
+
+  return defaultAllowedOriginPatterns.some((pattern) => pattern.test(origin));
+};
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: (origin, callback) => {
+      // Allow same-origin and non-browser requests without an Origin header.
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (isOriginAllowed(origin)) {
+        return callback(null, true);
+      }
+
+      console.warn(`CORS blocked for origin: ${origin}`);
+      return callback(null, false);
+    },
     credentials: true
   })
 );
