@@ -4,14 +4,11 @@ const REQUIRED_COLLECTIONS = ['users', 'appointments', 'medicalrecords', 'prescr
 
 const connectDB = async () => {
   try {
-    const isProduction = process.env.NODE_ENV === 'production';
-    const mongoUri = process.env.MONGO_URI || (!isProduction ? 'mongodb://127.0.0.1:27017/telemedicine_db' : '');
-
-    if (!mongoUri) {
-      throw new Error('MONGO_URI is required in production. Add it in Render Environment Variables.');
+    if (!process.env.MONGO_URI) {
+      throw new Error('MONGO_URI is missing. Set it in your .env locally and in Render Environment Variables.');
     }
 
-    await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 10000 });
+    await mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 10000 });
 
     const db = mongoose.connection.db;
     const existingCollections = await db.listCollections().toArray();
