@@ -4,8 +4,14 @@ const REQUIRED_COLLECTIONS = ['users', 'appointments', 'medicalrecords', 'prescr
 
 const connectDB = async () => {
   try {
-    const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/telemedicine_db';
-    await mongoose.connect(mongoUri);
+    const isProduction = process.env.NODE_ENV === 'production';
+    const mongoUri = process.env.MONGO_URI || (!isProduction ? 'mongodb://127.0.0.1:27017/telemedicine_db' : '');
+
+    if (!mongoUri) {
+      throw new Error('MONGO_URI is required in production. Add it in Render Environment Variables.');
+    }
+
+    await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 10000 });
 
     const db = mongoose.connection.db;
     const existingCollections = await db.listCollections().toArray();
@@ -21,6 +27,11 @@ const connectDB = async () => {
     console.log('Required collections are ready:', REQUIRED_COLLECTIONS.join(', '));
   } catch (error) {
     console.error('MongoDB connection error:', error.message);
+
+    if (error.message.includes('ECONNREFUSED 127.0.0.1:27017')) {
+      console.error('Hint: Render cannot use local MongoDB. Set MONGO_URI to your MongoDB Atlas URI in Render env vars.');
+    }
+
     process.exit(1);
   }
 };
