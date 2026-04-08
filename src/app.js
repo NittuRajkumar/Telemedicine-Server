@@ -38,24 +38,27 @@ const isOriginAllowed = (origin) => {
   return defaultAllowedOriginPatterns.some((pattern) => pattern.test(origin));
 };
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Allow same-origin and non-browser requests without an Origin header.
-      if (!origin) {
-        return callback(null, true);
-      }
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow same-origin and non-browser requests without an Origin header.
+    if (!origin) {
+      return callback(null, true);
+    }
 
-      if (isOriginAllowed(origin)) {
-        return callback(null, true);
-      }
+    if (isOriginAllowed(origin)) {
+      return callback(null, true);
+    }
 
-      console.warn(`CORS blocked for origin: ${origin}`);
-      return callback(null, false);
-    },
-    credentials: true
-  })
-);
+    console.warn(`CORS blocked for origin: ${origin}`);
+    return callback(null, false);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
