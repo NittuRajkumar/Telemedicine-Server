@@ -11,6 +11,15 @@ dotenv.config();
 const PORT = process.env.PORT || 5000;
 const MAX_PORT_RETRIES = 10;
 
+const validateRequiredEnv = () => {
+  const requiredEnvVars = ['JWT_SECRET', 'MONGO_URI'];
+  const missingVars = requiredEnvVars.filter((envName) => !String(process.env[envName] || '').trim());
+
+  if (missingVars.length > 0) {
+    throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
+  }
+};
+
 const ensureDefaultAdmin = async () => {
   const adminEmail = process.env.DEFAULT_ADMIN_EMAIL;
   const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD;
@@ -167,6 +176,7 @@ const ensureDefaultDoctors = async () => {
 const startServer = async () => {
   try {
     console.log('Starting server...');
+    validateRequiredEnv();
     await connectDB();
     await ensureDefaultAdmin();
     await ensureDefaultDoctors();
