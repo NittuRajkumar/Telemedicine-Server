@@ -20,6 +20,7 @@ const app = express();
 const allowedOrigins = [
   ...(process.env.CLIENT_URLS ? process.env.CLIENT_URLS.split(',') : []),
   ...(process.env.CLIENT_URL ? [process.env.CLIENT_URL] : []),
+  'https://telemedicine-frontend-lake.vercel.app',
   'http://localhost:5173'
 ]
   .map((origin) => origin.trim())

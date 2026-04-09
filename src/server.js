@@ -1,6 +1,5 @@
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
-import cors from 'cors';
 import net from 'node:net';
 
 import app from './app.js';
